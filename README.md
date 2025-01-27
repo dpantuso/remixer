@@ -1,25 +1,30 @@
 # Content Remix Tool
 
-A React-based application that helps you remix and transform content using AI.
+A simple React application that helps transform content using AI.
 
 ## Features
 
-- Paste text content for remixing
-- Select from multiple remixing options
-- Process content through AI API endpoints
-- View remixed output in real-time
-- Modern, responsive UI with customizable styling
+- Input area for pasting text content
+- Dropdown to select transformation type (e.g., "Make Professional", "Make Casual", "Simplify")
+- Transform button to process content through Claude API
+- Display area for transformed content
+- Clean, minimal UI with Tailwind CSS
 
 ## Tech Stack
 
-- [React](https://reactjs.org/) - Frontend framework
-- [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS framework
-- [Vercel](https://vercel.com/) - Deployment platform
-- [Claude API](https://www.anthropic.com/claude) - AI processing
+- React
+- Tailwind CSS
+- Claude API
 
 ## Getting Started
 
-(Coming soon)
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Add your Claude API key to `.env`:
+   ```
+   CLAUDE_API_KEY=your_key_here
+   ```
+4. Run the development server: `npm run dev`
 
 ## Future Enhancements
 
