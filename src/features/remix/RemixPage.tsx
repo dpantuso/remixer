@@ -22,7 +22,7 @@ function RemixPage(): JSX.Element {
   }
 
   return (
-    <div className="min-h-screen bg-red-500 py-12 px-4">
+    <div className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-6">
         <h1 className="text-4xl font-bold text-center mb-4 text-gray-900">Content Remix Tool</h1>
         <p className="text-gray-600 text-center mb-8">Transform your content with AI-powered remixing</p>
