@@ -10,68 +10,36 @@ declare global {
 }
 
 interface ClaudeResponse {
-  content: Array<{
-    text: string
-  }>
+  result: string;
 }
 
-interface SystemPrompts {
-  [key: string]: string
-}
-
-const CLAUDE_API_URL = 'https://api.anthropic.com/v1/messages'
+const API_URL = 'http://localhost:3005/api/remix';
 
 // Make sure this is a named export
-export const transformContent = async (content: string, transformType: string): Promise<string> => {
-  const apiKey = import.meta.env.VITE_CLAUDE_API_KEY
+export const tweetsFromPosts = async (content: string): Promise<string> => {
+  try {
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        content
+      })
+    });
 
-  if (!apiKey) {
-    throw new Error('Claude API key not found')
+    if (!response.ok) {
+      const errorData = await response.text();
+      console.error('API Error:', errorData);
+      throw new Error(`Failed to transform content: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data.result;
+  } catch (error) {
+    console.error('Error calling API:', error);
+    throw error;
   }
-
-  const systemPrompt = getSystemPrompt(transformType)
-  
-  const response = await fetch(CLAUDE_API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01'
-    },
-    body: JSON.stringify({
-      model: 'claude-3-sonnet-20240229',
-      max_tokens: 1024,
-      messages: [
-        {
-          role: 'system',
-          content: systemPrompt
-        },
-        {
-          role: 'user',
-          content: content
-        }
-      ]
-    })
-  })
-
-  if (!response.ok) {
-    throw new Error('Failed to transform content')
-  }
-
-  const data: ClaudeResponse = await response.json()
-  return data.content[0].text
-}
-
-const getSystemPrompt = (transformType: string): string => {
-  const prompts: SystemPrompts = {
-    professional: 'Remix this content to be more professional and formal.',
-    casual: 'Remix this content to be more casual and conversational.',
-    funny: 'Remix this content to be humorous and entertaining.',
-    poetic: 'Remix this content into a poetic form.',
-    tweet: 'Remix this content into a concise tweet format.'
-  }
-  
-  return prompts[transformType] || prompts.professional
 }
 
 // This keeps the type information while preventing it from being imported

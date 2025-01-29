@@ -1,17 +1,17 @@
 import { useState } from 'react'
 import ContentForm from './components/ContentForm'
-import { transformContent } from './services/claudeService'
+import { tweetsFromPosts } from './services/claudeService'
 
 function RemixPage(): JSX.Element {
   const [output, setOutput] = useState<string>('')
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [error, setError] = useState<string>('')
 
-  const handleTransform = async (input: string, remixType: string): Promise<void> => {
+  const handleTransform = async (input: string): Promise<void> => {
     setIsLoading(true)
     setError('')
     try {
-      const result = await transformContent(input, remixType)
+      const result = await tweetsFromPosts(input)
       setOutput(result)
     } catch (error) {
       console.error('Error:', error)
@@ -22,7 +22,7 @@ function RemixPage(): JSX.Element {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4">
+    <div className="min-h-screen bg-gray-60 py-12 px-4">
       <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-6">
         <h1 className="text-4xl font-bold text-center mb-4 text-gray-900">Content Remix Tool</h1>
         <p className="text-gray-600 text-center mb-8">Transform your content with AI-powered remixing</p>
