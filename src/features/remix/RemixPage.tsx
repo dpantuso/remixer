@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import ContentForm from './components/ContentForm'
-import { tweetsFromPosts } from './services/claudeService'
+import { TweetThread } from './components/TweetThread'
+import { transformContent } from './services/claudeService'
 
 function RemixPage(): JSX.Element {
-  const [output, setOutput] = useState<string>('')
+  const [tweets, setTweets] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [error, setError] = useState<string>('')
 
@@ -11,8 +12,8 @@ function RemixPage(): JSX.Element {
     setIsLoading(true)
     setError('')
     try {
-      const result = await tweetsFromPosts(input)
-      setOutput(result)
+      const result = await transformContent(input)
+      setTweets(result)
     } catch (error) {
       console.error('Error:', error)
       setError('Failed to remix content. Please try again.')
@@ -22,12 +23,12 @@ function RemixPage(): JSX.Element {
   }
 
   return (
-    <div className="min-h-screen bg-gray-60 py-12 px-4">
-      <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-6">
-        <h1 className="text-4xl font-bold text-center mb-4 text-gray-900">Content Remix Tool</h1>
-        <p className="text-gray-600 text-center mb-8">Transform your content with AI-powered remixing</p>
+    <div className="min-h-screen bg-gray-50 py-12 px-4">
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-4xl font-bold text-center mb-4 text-gray-900">Tweet Thread Generator</h1>
+        <p className="text-gray-600 text-center mb-8">Transform your content into engaging tweet threads</p>
         
-        <div className="mb-8">
+        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
           <ContentForm onSubmit={handleTransform} isLoading={isLoading} />
         </div>
 
@@ -37,12 +38,10 @@ function RemixPage(): JSX.Element {
           </div>
         )}
 
-        {output && (
+        {tweets.length > 0 && (
           <div className="mt-8">
-            <h2 className="text-2xl font-semibold mb-4 text-gray-900">Remixed Content</h2>
-            <div className="prose max-w-none">
-              <p className="whitespace-pre-wrap text-gray-700">{output}</p>
-            </div>
+            <h2 className="text-2xl font-semibold mb-4 text-gray-900">Your Tweet Thread</h2>
+            <TweetThread tweets={tweets} />
           </div>
         )}
       </div>

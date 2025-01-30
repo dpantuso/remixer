@@ -10,13 +10,13 @@ declare global {
 }
 
 interface ClaudeResponse {
-  result: string;
+  tweets: string[];
 }
 
 const API_URL = 'http://localhost:3005/api/remix';
 
 // Make sure this is a named export
-export const tweetsFromPosts = async (content: string): Promise<string> => {
+export const transformContent = async (content: string): Promise<string[]> => {
   try {
     const response = await fetch(API_URL, {
       method: 'POST',
@@ -34,8 +34,8 @@ export const tweetsFromPosts = async (content: string): Promise<string> => {
       throw new Error(`Failed to transform content: ${response.status} ${response.statusText}`);
     }
 
-    const data = await response.json();
-    return data.result;
+    const data: ClaudeResponse = await response.json();
+    return data.tweets;
   } catch (error) {
     console.error('Error calling API:', error);
     throw error;

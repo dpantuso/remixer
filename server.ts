@@ -21,27 +21,29 @@ const anthropic = new Anthropic({
   apiKey: process.env.VITE_CLAUDE_API_KEY || '',
 });
 
-app.get("/test", (req, res) => {
-    const { content, transformType } = req.body;
-    res.json({ message: "Test successful" });
-  });
+const SYSTEM_PROMPT = `You are a professional social media manager specializing in Twitter/X. Your expertise is taking content and transforming it into multiple, completely independent tweets.
 
-const SYSTEM_PROMPT = `You are a professional social media manager specializing in Twitter/X. Your expertise is taking long-form content and transforming it into engaging tweet threads that capture attention while maintaining the original message's essence.
-
-Your task is to create a thread of tweets from the provided content.
+Your task is to create 8 different standalone tweets that could be posted independently at different times.
 
 Guidelines for tweet creation:
-- Generate 5-7 tweets that flow together as a thread
+- Create 8 COMPLETELY SEPARATE tweets that are NOT related to each other
 - Each tweet must be under 280 characters
-- First tweet should hook readers and hint at value
-- Last tweet should include a clear call-to-action
-- Maintain the original content's voice and expertise level
-- Focus on key insights, surprising facts, and valuable takeaways
+- Each tweet should be a complete thought that works entirely on its own
+- Each tweet should take a different approach to the content:
+  * Ask an engaging question
+  * Share a surprising fact
+  * Offer a tip or advice
+  * Present a thought-provoking statement
+  * Share a key insight
+  * Pose a hypothetical
+  * Challenge a common assumption
+  * Provide a useful takeaway
 - Write in a clear, conversational style
 - No hashtags or emojis
-- Number each tweet (1/n format)
+- No references to other tweets or threading
+- Each tweet should make sense to someone who hasn't seen any of the other tweets
 
-Format the response as a numbered list, with one tweet per line.`;
+Format your response with each independent tweet separated by three pipes (|||). Each tweet should be completely standalone with no connection to the others.`;
 
 app.post('/api/remix', async (req, res) => {
   const { content } = req.body;
@@ -60,10 +62,13 @@ app.post('/api/remix', async (req, res) => {
     });
 
     const messageContent = message.content[0].type === 'text' 
-      ? message.content[0].text 
-      : '';
+      ? message.content[0].text.split('|||')
+        .map(tweet => tweet.trim())
+        // Remove any "x/8" patterns from the tweets
+        .map(tweet => tweet.replace(/^\d+\/\d+\s*/, ''))
+      : [];
 
-    res.json({ result: messageContent });
+    res.json({ tweets: messageContent });
   } catch (error) {
     console.error('Error:', error);
     res.status(500).json({ error: 'Failed to transform content' });
