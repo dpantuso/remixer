@@ -29,12 +29,19 @@ export const transformContent = async (content: string): Promise<string[]> => {
     });
 
     if (!response.ok) {
-      const errorData = await response.text();
-      console.error('API Error:', errorData);
+      const errorText = await response.text();
+      console.error('API Error:', errorText);
       throw new Error(`Failed to transform content: ${response.status} ${response.statusText}`);
     }
 
-    const data: ClaudeResponse = await response.json();
+    const data = await response.json();
+    
+    // Validate the response structure
+    if (!data || !Array.isArray(data.tweets)) {
+      console.error('Invalid response structure:', data);
+      throw new Error('Invalid response format from server');
+    }
+
     return data.tweets;
   } catch (error) {
     console.error('Error calling API:', error);

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import ContentForm from './components/ContentForm'
 import { TweetThread } from './components/TweetThread'
+import { SavedTweets } from './components/SavedTweets'
 import { transformContent } from './services/claudeService'
 
 function RemixPage(): JSX.Element {
@@ -24,7 +25,7 @@ function RemixPage(): JSX.Element {
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-4xl mx-auto pr-80">
         <h1 className="text-4xl font-bold text-center mb-4 text-gray-900">Tweet Thread Generator</h1>
         <p className="text-gray-600 text-center mb-8">Transform your content into engaging tweet threads</p>
         
@@ -45,6 +46,7 @@ function RemixPage(): JSX.Element {
           </div>
         )}
       </div>
+      <SavedTweets />
     </div>
   )
 }

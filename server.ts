@@ -14,6 +14,14 @@ dotenv.config();
 const app = express();
 const port = 3005;
 
+// Add logging to check if API key is present
+const apiKey = process.env.VITE_CLAUDE_API_KEY;
+if (!apiKey) {
+  console.error('ERROR: Claude API key is missing!');
+} else {
+  console.log('Claude API key is present (starts with):', apiKey.substring(0, 4) + '...');
+}
+
 app.use(cors());
 app.use(express.json());
 
@@ -48,6 +56,10 @@ Format your response with each independent tweet separated by three pipes (|||).
 app.post('/api/remix', async (req, res) => {
   const { content } = req.body;
 
+  if (!content) {
+    return res.status(400).json({ error: 'No content provided' });
+  }
+
   try {
     const message = await anthropic.messages.create({
       model: "claude-3-5-sonnet-latest",
@@ -61,17 +73,28 @@ app.post('/api/remix', async (req, res) => {
       ]
     });
 
+    if (!message.content || !message.content[0] || message.content[0].type !== 'text') {
+      console.error('Invalid message structure:', message);
+      return res.status(500).json({ error: 'Invalid response from AI service' });
+    }
+
     const messageContent = message.content[0].type === 'text' 
       ? message.content[0].text.split('|||')
         .map(tweet => tweet.trim())
-        // Remove any "x/8" patterns from the tweets
-        .map(tweet => tweet.replace(/^\d+\/\d+\s*/, ''))
+        .filter(tweet => tweet.length > 0)
       : [];
+
+    if (!messageContent.length) {
+      return res.status(500).json({ error: 'No valid tweets generated' });
+    }
 
     res.json({ tweets: messageContent });
   } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ error: 'Failed to transform content' });
+    console.error('Server Error:', error);
+    res.status(500).json({ 
+      error: 'Failed to transform content',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
   }
 });
 
