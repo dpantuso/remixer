@@ -3,9 +3,10 @@ import { supabase } from '../../../config/supabase';
 
 interface TweetThreadProps {
   tweets: string[];
+  onTweetSaved: () => Promise<void>;
 }
 
-export const TweetThread: React.FC<TweetThreadProps> = ({ tweets }) => {
+export const TweetThread: React.FC<TweetThreadProps> = ({ tweets, onTweetSaved }) => {
   if (!tweets.length) return null;
 
   // Split tweets into two columns
@@ -54,6 +55,7 @@ export const TweetThread: React.FC<TweetThreadProps> = ({ tweets }) => {
         
         console.log('Tweet saved successfully:', data);
         setSaveStatus('success');
+        await onTweetSaved();
         
         // Reset success message after 2 seconds
         setTimeout(() => {

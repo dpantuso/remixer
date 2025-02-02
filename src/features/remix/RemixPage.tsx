@@ -1,13 +1,14 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import ContentForm from './components/ContentForm'
 import { TweetThread } from './components/TweetThread'
-import { SavedTweets } from './components/SavedTweets'
+import { SavedTweets, SavedTweetsRef } from './components/SavedTweets'
 import { transformContent } from './services/claudeService'
 
 function RemixPage(): JSX.Element {
   const [tweets, setTweets] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [error, setError] = useState<string>('')
+  const savedTweetsRef = useRef<SavedTweetsRef>(null);
 
   const handleTransform = async (input: string): Promise<void> => {
     setIsLoading(true)
@@ -22,6 +23,10 @@ function RemixPage(): JSX.Element {
       setIsLoading(false)
     }
   }
+
+  const handleTweetSaved = async () => {
+    await savedTweetsRef.current?.refreshTweets();
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
@@ -42,11 +47,11 @@ function RemixPage(): JSX.Element {
         {tweets.length > 0 && (
           <div className="mt-8">
             <h2 className="text-2xl font-semibold mb-4 text-gray-900">Your Tweet Thread</h2>
-            <TweetThread tweets={tweets} />
+            <TweetThread tweets={tweets} onTweetSaved={handleTweetSaved} />
           </div>
         )}
       </div>
-      <SavedTweets />
+      <SavedTweets ref={savedTweetsRef} />
     </div>
   )
 }

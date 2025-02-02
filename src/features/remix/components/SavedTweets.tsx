@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useImperativeHandle, forwardRef } from 'react';
 import { supabase, SavedTweet } from '../../../config/supabase';
 
-export const SavedTweets: React.FC = () => {
-  const [savedTweets, setSavedTweets] = useState<SavedTweet[]>([]);
+export interface SavedTweetsRef {
+  refreshTweets: () => Promise<void>;
+}
 
-  useEffect(() => {
-    fetchSavedTweets();
-  }, []);
+export const SavedTweets = forwardRef<SavedTweetsRef>((_, ref) => {
+  const [savedTweets, setSavedTweets] = useState<SavedTweet[]>([]);
 
   const fetchSavedTweets = async () => {
     const { data, error } = await supabase
@@ -20,6 +20,14 @@ export const SavedTweets: React.FC = () => {
       setSavedTweets(data || []);
     }
   };
+
+  useImperativeHandle(ref, () => ({
+    refreshTweets: fetchSavedTweets
+  }));
+
+  useEffect(() => {
+    fetchSavedTweets();
+  }, []);
 
   const handleDelete = async (id: number) => {
     const { error } = await supabase
@@ -57,4 +65,4 @@ export const SavedTweets: React.FC = () => {
       </div>
     </div>
   );
-}; 
+}); 
