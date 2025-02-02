@@ -8,6 +8,7 @@ function RemixPage(): JSX.Element {
   const [tweets, setTweets] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [error, setError] = useState<string>('')
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const savedTweetsRef = useRef<SavedTweetsRef>(null);
 
   const handleTransform = async (input: string): Promise<void> => {
@@ -30,7 +31,9 @@ function RemixPage(): JSX.Element {
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
-      <div className="max-w-4xl mx-auto pr-80">
+      <div className={`max-w-4xl mx-auto transition-all duration-300 ${
+        isSidebarCollapsed ? 'pr-12' : 'pr-80'
+      }`}>
         <h1 className="text-4xl font-bold text-center mb-4 text-gray-900">Tweet Thread Generator</h1>
         <p className="text-gray-600 text-center mb-8">Transform your content into engaging tweet threads</p>
         
@@ -51,7 +54,10 @@ function RemixPage(): JSX.Element {
           </div>
         )}
       </div>
-      <SavedTweets ref={savedTweetsRef} />
+      <SavedTweets 
+        ref={savedTweetsRef} 
+        onCollapse={(collapsed) => setIsSidebarCollapsed(collapsed)}
+      />
     </div>
   )
 }

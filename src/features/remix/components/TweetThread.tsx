@@ -9,21 +9,40 @@ interface TweetThreadProps {
 export const TweetThread: React.FC<TweetThreadProps> = ({ tweets, onTweetSaved }) => {
   if (!tweets.length) return null;
 
-  // Split tweets into two columns
-  const leftColumn = tweets.slice(0, 4);
-  const rightColumn = tweets.slice(4, 8);
+  const MAX_CHARS = 280; // Move MAX_CHARS to component level so it can be used by both functions
+
+  const cleanTweetText = (text: string): string => {
+    const cleaned = text
+      .replace(/^\|+/, '') // Remove leading pipe characters
+      .trim(); // Remove leading/trailing whitespace
+    
+    // Truncate to MAX_CHARS if the initial tweet is too long
+    return cleaned.length > MAX_CHARS ? cleaned.slice(0, MAX_CHARS) : cleaned;
+  };
 
   const TweetCard = ({ tweet, index }: { tweet: string; index: number }) => {
-    const [tweetText, setTweetText] = useState(tweet);
+    const [tweetText, setTweetText] = useState(cleanTweetText(tweet));
     const [isSaving, setIsSaving] = useState(false);
     const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
-    const MAX_CHARS = 280;
+    const textareaRef = React.useRef<HTMLTextAreaElement>(null);
     const remainingChars = MAX_CHARS - tweetText.length;
     const charCountColor = remainingChars < 20 
       ? 'text-red-500' 
       : remainingChars < 50 
         ? 'text-yellow-500' 
         : 'text-gray-400';
+
+    // Adjust textarea height on mount and content change
+    React.useEffect(() => {
+      if (textareaRef.current) {
+        textareaRef.current.style.height = 'auto';
+        textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
+      }
+    }, [tweetText]);
+
+    const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      setTweetText(e.target.value);
+    };
 
     const handleCopy = async () => {
       try {
@@ -70,46 +89,50 @@ export const TweetThread: React.FC<TweetThreadProps> = ({ tweets, onTweetSaved }
     };
 
     return (
-      <div className="relative group h-55">
-        <div className="absolute -left-8 top-2 text-gray-400 font-medium">
-          {index + 1}
-        </div>
-        <div className="bg-white p-3 rounded-lg shadow-sm border border-gray-200 hover:border-blue-300 transition-colors h-full flex flex-col">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-100">
+        <div className="p-4">
           <textarea
+            ref={textareaRef}
             value={tweetText}
-            onChange={(e) => setTweetText(e.target.value)}
-            className="w-full text-gray-800 leading-snug mb-2 resize-none border-0 focus:ring-0 p-0 flex-grow"
-            rows={7}
+            onChange={handleTextChange}
+            className="w-full text-gray-800 text-[15px] leading-snug resize-none border-0 focus:ring-0 p-0 mb-3 overflow-hidden"
+            placeholder="Write your tweet..."
           />
-          <div className="border-t border-gray-100 pt-2 flex justify-between items-center">
-            <span className={`text-sm font-sans ${charCountColor}`}>
+          <div className="flex items-center justify-between text-sm text-gray-500">
+            <div>
               {remainingChars} characters remaining
-            </span>
-            <div className="space-x-3 flex items-center">
-              {saveStatus === 'success' && (
-                <span className="text-green-500 text-sm">Saved!</span>
-              )}
-              {saveStatus === 'error' && (
-                <span className="text-red-500 text-sm">Error saving</span>
-              )}
+            </div>
+            <div className="flex items-center space-x-4">
               <button 
                 onClick={handleCopy}
-                className="text-gray-400 hover:text-blue-500 text-sm transition-colors"
+                className="hover:text-gray-800"
               >
-                Copy
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+                </svg>
               </button>
               <button 
                 onClick={handleTweet}
-                className="text-gray-400 hover:text-blue-500 text-sm transition-colors"
+                className="hover:text-[#1DA1F2]"
               >
-                Share on X
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                </svg>
               </button>
               <button 
                 onClick={handleSave}
                 disabled={isSaving}
-                className="text-gray-400 hover:text-blue-500 text-sm transition-colors disabled:opacity-50"
+                className={`hover:text-green-500 ${saveStatus === 'success' ? 'text-green-500' : ''}`}
               >
-                {isSaving ? 'Saving...' : 'Save'}
+                {saveStatus === 'success' ? (
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+                  </svg>
+                ) : (
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2zm0 15l-5-2.18L7 18V5h10v13z"/>
+                  </svg>
+                )}
               </button>
             </div>
           </div>
@@ -119,18 +142,11 @@ export const TweetThread: React.FC<TweetThreadProps> = ({ tweets, onTweetSaved }
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {/* Left column */}
-      <div className="space-y-3 pl-8">
-        {leftColumn.map((tweet, index) => (
+    <div>
+      <h2 className="text-xl font-semibold mb-4 text-gray-900">Generated Tweets:</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {tweets.map((tweet, index) => (
           <TweetCard key={index} tweet={tweet} index={index} />
-        ))}
-      </div>
-      
-      {/* Right column */}
-      <div className="space-y-3 pl-8">
-        {rightColumn.map((tweet, index) => (
-          <TweetCard key={index + 4} tweet={tweet} index={index + 4} />
         ))}
       </div>
     </div>
